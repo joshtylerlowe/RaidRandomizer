@@ -90,6 +90,16 @@ function randomizeArray(array) {
     return array;
 }
 
+function fetchRandomReasonablePersonRole(object, roles) {
+    var result;
+    for (var property in object) {
+        if ((Math.random()*100 < 50) && $.inArray(property, roles) && object[property] > 0) {//todo: this needs work
+            result = property;
+        }
+    }
+    return result;
+}
+
 $(document).ready(function () {
     $("#myfile").on("change", function (changeEvent) {
         for (var i = 0; i < changeEvent.target.files.length; ++i) {
@@ -111,6 +121,7 @@ $(document).ready(function () {
     });
 });
 
+var raidComp = {};
 
 function run(jsonObject) {
     var comp = vgComp; //TODO: change to currently selected "comp" dropdown on UI
@@ -121,14 +132,18 @@ function run(jsonObject) {
 
     //for each role go through each person
     for (var roleNum = 0; roleNum < randomRoles.length; roleNum++) {
-        for (var personNum = 0; personNum < randomPeople; randomPeople++) {
-
+        for (var personNum = 0; personNum < randomPeople.length; personNum++) {
+            //find suitable role (check 3s, then 2s, then 1s)
+            var role = randomRoles[roleNum];
+            var person = randomPeople[personNum];
+            console.log(role);
+            var randomPersonRole = fetchRandomReasonablePersonRole(person, comp[role]);
+            console.log(randomPersonRole);
+            
+            //if no role found, pick random role and replace... add replaced person to end of person list
+            //stop loop after 50 loops or all roles filled
         }
     }
-
-    //find suitable role (check 3s, then 2s, then 1s)
-    //if no role found, pick random role and replace... add replaced person to end of person list
-    //stop loop after 50 loops or all roles filled
 };
 
 
