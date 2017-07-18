@@ -90,14 +90,26 @@ function randomizeArray(array) {
     return array;
 }
 
-function fetchRandomReasonablePersonRole(object, roles) {
+function pickRandomProperty(obj) {
     var result;
-    for (var property in object) {
-        if ((Math.random()*100 < 50) && $.inArray(property, roles) && object[property] > 0) {//todo: this needs work
-            result = property;
+    var count = 0;
+    for (var prop in obj)
+        if (Math.random() < 1/++count)
+           result = prop;
+    return result;
+}
+
+function fetchRandomReasonablePersonRole(object, roles) {
+    var possiblePersonRoles = [];
+
+    for (var i = 0; i < Object.keys(object).length; i++) {
+        var key = Object.keys(object)[i];
+        if (object[key] > 0 && $.inArray(key, roles) !== -1) {
+            possiblePersonRoles.push(key);
         }
     }
-    return result;
+
+    return randomizeArray(possiblePersonRoles)[0];
 }
 
 $(document).ready(function () {
@@ -133,15 +145,37 @@ function run(jsonObject) {
     //for each role go through each person
     for (var roleNum = 0; roleNum < randomRoles.length; roleNum++) {
         for (var personNum = 0; personNum < randomPeople.length; personNum++) {
-            //find suitable role (check 3s, then 2s, then 1s)
+            //find suitable role
             var role = randomRoles[roleNum];
             var person = randomPeople[personNum];
-            console.log(role);
+
+            if (Object.values(raidComp).indexOf(person.name) > -1) {
+                //person already added;
+                continue;
+            }
+
             var randomPersonRole = fetchRandomReasonablePersonRole(person, comp[role]);
-            console.log(randomPersonRole);
-            
-            //if no role found, pick random role and replace... add replaced person to end of person list
-            //stop loop after 50 loops or all roles filled
+
+            //set person to role
+            if (randomPersonRole && randomPersonRole.length > 0) {
+                raidComp[role] = person.name;
+                break;
+            } else {
+                //if no role found, pick random role that the person CAN fill and set it
+
+                for (var roleRetryNum = 0; roleRetryNum < randomRoles.length; roleRetryNum++) {
+                    var availableRetryRoles = comp[randomRoles[roleRetryNum]];
+                    for (var x = 0; x < availableRetryRoles.length; x++) {
+                        if (person[availableRetryRoles[x]] > 0) {
+                            raidComp[randomRoles[roleRetryNum]] = person.name;
+                        }
+                    }
+                }
+                if (Object.values(raidComp).indexOf(person.name) == -1) {
+                    alert("could not find a place for: " + person.name);
+                    return;
+                }
+            }
         }
     }
 };
