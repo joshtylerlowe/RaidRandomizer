@@ -136,13 +136,181 @@ function run(jsonObject) {
 var vgComp = {
     ChronoTank: ['chronotank'],
     OffChrono: ['zerker chrono'],
-    Healer: ['magi druid'],
-    CondiDruid: ['condi druid'],
-    StrengthCondiPS: ['condi PS'],
-    DisciplineCondiPS: ['condi PS'],
+    HealerOne: ['magi druid'],
+    HealerTwo: ['magi druid', 'condi druid'],
+    StrengthPS: ['condi PS'],
+    DisciplinePS: ['condi PS'],
     CondiDPSOne: ['condi ranger', 'condi thief', 'condi engi', 'condi tempest'],
     CondiDPSTwo: ['condi ranger', 'condi thief', 'condi engi', 'condi tempest'],
     GeneralDPSOne: ['condi ranger', 'condi thief', 'condi engi', 'condi tempest', 'DH', 'staff tempest', 'x/wh tempest'],
     GeneralDPSTwo: ['condi ranger', 'condi thief', 'condi engi', 'condi tempest', 'DH', 'staff tempest', 'x/wh tempest'],
-    compOrder: ['ChronoTank', 'OffChrono', 'Healer', 'CondiDruid', 'StrengthCondiPS', 'DisciplineCondiPS', 'CondiDPSOne', 'CondiDPSTwo', 'GeneralDPSOne', 'GeneralDPSTwo']
+    compOrder: ['ChronoTank', 'OffChrono', 'HealerOne', 'HealerTwo', 'StrengthPS', 'DisciplinePS', 'CondiDPSOne', 'CondiDPSTwo', 'GeneralDPSOne', 'GeneralDPSTwo']
+};
+
+var gorsComp = {
+    ChronoTank: ['chronotank'],
+    OffChrono: ['zerker chrono'],
+    HealerOne: ['magi druid'],
+    HealerTwo: ['magi druid'],
+    StrengthPS: ['condi PS'],
+    DisciplinePS: ['condi PS'],
+    OrbEleOne: ['staff tempest'],
+    OrbEleTwo: ['staff tempest'],
+    DPSOne: ['condi ranger', 'condi thief', 'condi engi', 'condi tempest', 'DH', 'staff tempest', 'x/wh tempest'],
+    DPSTwo: ['condi ranger', 'condi thief', 'condi engi', 'condi tempest', 'DH', 'staff tempest', 'x/wh tempest'],
+    compOrder: ['ChronoTank', 'OffChrono', 'HealerOne', 'HealerTwo', 'StrengthPS', 'DisciplinePS', 'OrbEleOne', 'OrbEleTwo', 'DPSOne', 'DPSTwo']
+};
+
+var sabComp = {
+    ChronoOne: ['chronotank', 'zerker chrono'],
+    ChronoTwo: ['chronotank', 'zerker chrono'],
+    Healer: ['magi druid'],
+    FlakKiter: ['magi druid'],
+    StrengthPS: ['condi PS'],
+    DisciplinePS: ['condi PS'],
+    OddCannons: ['staff tempest', 'x/wh tempest'],
+    EvenCannons: ['staff tempest', 'x/wh tempest'],
+    DPSOne: ['condi ranger', 'condi thief', 'condi engi', 'condi tempest', 'DH', 'staff tempest', 'x/wh tempest'],
+    DPSTwo: ['condi ranger', 'condi thief', 'condi engi', 'condi tempest', 'DH', 'staff tempest', 'x/wh tempest'],
+    compOrder: ['ChronoOne', 'ChronoTwo', 'Healer', 'FlakKiter', 'StrengthPS', 'DisciplinePS', 'OddCannons', 'EvenCannons', 'DPSOne', 'DPSTwo']
+};
+
+var slothComp = {
+    ChronoOne: ['chronotank', 'zerker chrono'],
+    ChronoTwo: ['chronotank', 'zerker chrono'],
+    HealerOne: ['magi druid'],
+    HealerTwo: ['magi druid'],
+    StrengthPS: ['condi PS'],
+    DisciplinePS: ['condi PS'],
+    DPSOne: ['condi ranger', 'condi tempest', 'staff tempest', 'x/wh tempest', 'condi reaper'],
+    DPSTwo: ['condi ranger', 'condi tempest', 'staff tempest', 'x/wh tempest', 'condi reaper'],
+    DPSThree: ['condi ranger', 'condi tempest', 'staff tempest', 'x/wh tempest', 'condi reaper'],
+    DPSFour: ['condi ranger', 'condi tempest', 'staff tempest', 'x/wh tempest', 'condi reaper'],
+    compOrder: ['ChronoOne', 'ChronoTwo', 'HealerOne', 'HealerTwo', 'StrengthPS', 'DisciplinePS', 'DPSOne', 'DPSTwo', 'DPSThree', 'DPSFour']
+};
+
+var trioComp = {
+    ChronoOne: ['chronotank', 'zerker chrono'],
+    ChronoTwo: ['chronotank', 'zerker chrono'],
+    HealerOne: ['magi druid'],
+    HealerTwo: ['magi druid', 'condi druid'],
+    StrengthPS: ['condi PS'],
+    DisciplinePS: ['condi PS'],
+    DPSOne: ['condi ranger', 'condi tempest', 'staff tempest', 'x/wh tempest', 'condi reaper', 'condi engi'],
+    DPSTwo: ['condi ranger', 'condi tempest', 'staff tempest', 'x/wh tempest', 'condi reaper', 'condi engi'],
+    DPSThree: ['condi ranger', 'condi tempest', 'staff tempest', 'x/wh tempest', 'condi reaper', 'condi engi'],
+    DPSFour: ['condi ranger', 'condi tempest', 'staff tempest', 'x/wh tempest', 'condi reaper', 'condi engi'],
+    compOrder: ['ChronoOne', 'ChronoTwo', 'HealerOne', 'HealerTwo', 'StrengthPS', 'DisciplinePS', 'DPSOne', 'DPSTwo', 'DPSThree', 'DPSFour']
+};
+
+var mattComp = {
+    ChronoOne: ['chronotank', 'zerker chrono'],
+    ChronoTwo: ['chronotank', 'zerker chrono'],
+    Auramancer: ['heal tempest'],
+    MagiDruid: ['magi druid'],
+    CondiDruid: ['condi druid'],
+    StrengthPS: ['condi PS'],
+    DisciplinePS: ['condi PS'],
+    DPSOne: ['condi ranger', 'condi tempest', 'condi reaper', 'condi mes'],
+    DPSTwo: ['condi ranger', 'condi tempest', 'condi reaper', 'condi mes'],
+    DPSThree: ['condi ranger', 'condi tempest', 'condi reaper', 'condi mes'],
+    compOrder: ['ChronoOne', 'ChronoTwo', 'Auramancer', 'MagiDruid', 'CondiDruid', 'StrengthPS', 'DisciplinePS', 'DPSOne', 'DPSTwo', 'DPSThree']
+};
+
+var escortComp = {
+    ShroomChrono: ['chronotank', 'zerker chrono'],
+    OffChrono: ['chronotank', 'zerker chrono'],
+    Babysitter: ['magi druid'],
+    Healer: ['magi druid', 'condi druid'],
+    StrengthPS: ['condi PS'],
+    DisciplinePS: ['condi PS'],
+    DPSOne: ['condi ranger', 'condi tempest', 'staff tempest', 'x/wh tempest', 'condi reaper', 'condi engi', 'DH'],
+    DPSTwo: ['condi ranger', 'condi tempest', 'staff tempest', 'x/wh tempest', 'condi reaper', 'condi engi', 'DH'],
+    DPSThree: ['condi ranger', 'condi tempest', 'staff tempest', 'x/wh tempest', 'condi reaper', 'condi engi', 'DH'],
+    DPSFour: ['condi ranger', 'condi tempest', 'staff tempest', 'x/wh tempest', 'condi reaper', 'condi engi', 'DH'],
+    compOrder: ['ShroomChrono', 'OffChrono', 'Babysitter', 'Healer', 'StrengthPS', 'DisciplinePS', 'DPSOne', 'DPSTwo', 'DPSThree', 'DPSFour']
+};
+
+var kcComp = {
+    ChronoTank: ['chronotank'],
+    OffChrono: ['zerker chrono'],
+    HealerOne: ['magi druid'],
+    HealerTwo: ['magi druid'],
+    StrengthPS: ['condi PS'],
+    DisciplinePS: ['condi PS'],
+    DPSOne: ['staff tempest', 'DH'],
+    DPSTwo: ['staff tempest'],
+    DPSThree: ['staff tempest'],
+    DPSFour: ['staff tempest'],
+    compOrder: ['ChronoTank', 'OffChrono', 'HealerOne', 'HealerTwo', 'StrengthPS', 'DisciplinePS', 'DPSOne', 'DPSTwo', 'DPSThree', 'DPSFour']
+};
+
+var xeraComp = {
+    ChronoTank: ['chronotank'],
+    OffChrono: ['zerker chrono'],
+    HealerOne: ['magi druid'],
+    HealerTwo: ['magi druid'],
+    StrengthPS: ['condi PS'],
+    DisciplinePS: ['condi PS'],
+    OrbEleLeft: ['staff tempest'],
+    OrbEleRight: ['staff tempest'],
+    DPSOne: ['staff tempest', 'x/wh tempest', 'condi ranger'],
+    DPSTwo: ['staff tempest', 'x/wh tempest', 'condi ranger'],
+    compOrder: ['ChronoTank', 'OffChrono', 'HealerOne', 'HealerTwo', 'StrengthPS', 'DisciplinePS', 'OrbEleLeft', 'OrbEleRight', 'DPSOne', 'DPSTwo']
+};
+
+var cairnComp = {
+    ChronoOne: ['chronotank', 'zerker chrono'],
+    ChronoTwo: ['chronotank', 'zerker chrono'],
+    HealerOne: ['magi druid'],
+    HealerTwo: ['magi druid'],
+    StrengthPS: ['condi PS'],
+    DisciplinePS: ['condi PS'],
+    DPSOne: ['condi ranger', 'condi tempest', 'condi reaper', 'condi engi', 'condi thief', 'condi mes'],
+    DPSTwo: ['condi ranger', 'condi tempest', 'condi engi', 'condi thief', 'condi mes'],
+    DPSThree: ['condi ranger', 'condi tempest', 'condi thief', 'condi mes'],
+    DPSFour: ['condi ranger', 'condi tempest', 'condi thief', 'condi mes'],
+    compOrder: ['ChronoOne', 'ChronoTwo', 'HealerOne', 'HealerTwo', 'StrengthPS', 'DisciplinePS', 'DPSOne', 'DPSTwo', 'DPSThree', 'DPSFour']
+};
+
+var moComp = {
+    ChronoOne: ['chronotank', 'zerker chrono'],
+    ChronoTwo: ['chronotank', 'zerker chrono'],
+    HealerOne: ['magi druid', 'condi druid'],
+    HealerTwo: ['magi druid', 'condi druid'],
+    StrengthPS: ['condi PS'],
+    DisciplinePS: ['condi PS'],
+    EpiReaper: ['condi reaper'],
+    DPSOne: ['condi ranger', 'condi tempest', 'condi reaper', 'condi engi', 'condi thief'],
+    DPSTwo: ['condi ranger', 'condi tempest', 'condi engi', 'condi thief'],
+    DPSThree: ['condi ranger', 'condi tempest', 'condi thief'],
+    compOrder: ['ChronoOne', 'ChronoTwo', 'HealerOne', 'HealerTwo', 'StrengthPS', 'DisciplinePS', 'EpiReaper', 'DPSOne', 'DPSTwo', 'DPSThree']
+};
+
+var samComp = {
+    ChronoOne: ['chronotank', 'zerker chrono'],
+    ChronoTwo: ['chronotank', 'zerker chrono'],
+    HealerOne: ['magi druid'],
+    HealerTwo: ['magi druid'],
+    StrengthPS: ['condi PS'],
+    DisciplinePS: ['condi PS'],
+    DPSOne: ['condi ranger', 'condi tempest', 'condi reaper', 'condi engi', 'condi thief'],
+    DPSTwo: ['condi ranger', 'condi tempest', 'condi thief'],
+    DPSThree: ['condi ranger', 'condi tempest', 'condi thief'],
+    DPSFour: ['condi ranger', 'condi tempest', 'condi thief'],
+    compOrder: ['ChronoOne', 'ChronoTwo', 'HealerOne', 'HealerTwo', 'StrengthPS', 'DisciplinePS', 'DPSOne', 'DPSTwo', 'DPSThree', 'DPSFour']
+};
+
+var deimosComp = {
+    ChronoTank: ['chronotank'],
+    OffChrono: ['zerker chrono'],
+    OilKiter: ['magi druid'],
+    Healer: ['magi druid'],
+    HandKiter: ['hand kite rev'],
+    StrengthPS: ['condi PS'],
+    DisciplinePS: ['condi PS'],
+    DPSOne: ['condi ranger'],
+    DPSTwo: ['condi ranger'],
+    DPSThree: ['condi ranger'],
+    compOrder: ['ChronoTank', 'OffChrono', 'OilKiter', 'Healer', 'HandKiter', 'StrengthPS', 'DisciplinePS', 'DPSOne', 'DPSTwo', 'DPSThree']
 };
