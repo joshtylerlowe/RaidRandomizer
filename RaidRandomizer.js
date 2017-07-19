@@ -185,6 +185,7 @@ function run(jsonObject) {
                     if (raidComp[Object.keys(raidComp)[assignedRolesNum]].name == person.name) {
                         //person already added;
                         personFound = true;
+                        break;
                     }
                 }
                 if (personFound == false) {
