@@ -137,7 +137,8 @@ $(document).ready(function () {
 var buildingTries = 0;
 function run(jsonObject) {
     var raidComp = {};
-    var comp = deimosComp; //TODO: change to currently selected "comp" dropdown on UI
+    var comp = getCompFromName($('#compSelect').val());
+    var prestineCompOrder = $.extend([], comp.compOrder);
 
     //randomize roles
     var randomRoles = randomizeArray(comp.compOrder);
@@ -206,9 +207,13 @@ function run(jsonObject) {
         run(jsonObject);
     } else {
         //build copy/paste-able text for assigning roles
-        buildRaidCompText(raidComp);
+        buildRaidCompText(raidComp, prestineCompOrder);
     }
 };
+
+function getCompFromName(compName) {
+    return window[compName];
+}
 
 function compAbilityTotal(comp) {
     var sum = 0;
@@ -218,8 +223,20 @@ function compAbilityTotal(comp) {
     return sum;
 }
 
-function buildRaidCompText() {
+function buildRaidCompText(comp, compArray) {
+    $('#myform').hide();
 
+    var displayText = '';
+    
+    for (var i = 0; i < compArray.length; i++) {
+        var compElement = compArray[i];
+        displayText +=
+            '<div>' +
+            compElement.split(/(?=[A-Z])/).join(" ") + ': ' + comp[compElement].name + '(' + comp[compElement].profession + ')';
+            '</div>';
+    }
+
+    $('.mainContent').html(displayText);
 }
 
 
