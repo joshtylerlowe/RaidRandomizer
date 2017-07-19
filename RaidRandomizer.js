@@ -245,7 +245,7 @@ function buildRaidCompText(comp, compArray) {
 
     displayText +=
         '<div>' +
-        'Cofidence: ' + Math.floor((ability/(totalPossibleAbility*3)) * 100) + '% (' + ability + '/' + (totalPossibleAbility*3) + ')'
+        'Confidence: ' + Math.floor((ability/(totalPossibleAbility*3)) * 100) + '% (' + ability + '/' + (totalPossibleAbility*3) + ')'
         '</div>';
 
     $('.mainContent').html(displayText);
