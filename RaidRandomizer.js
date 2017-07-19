@@ -90,15 +90,6 @@ function randomizeArray(array) {
     return array;
 }
 
-function pickRandomProperty(obj) {
-    var result;
-    var count = 0;
-    for (var prop in obj)
-        if (Math.random() < 1/++count)
-           result = prop;
-    return result;
-}
-
 function fetchRandomReasonablePersonRole(object, roles) {
     var possiblePersonRoles = [];
 
@@ -171,24 +162,22 @@ function run(jsonObject) {
                 break;
             } else {
                 //if no role found, pick random role that the person CAN fill and set it
+                var replacementRoleFound = false;
                 for (var roleRetryNum = 0; roleRetryNum < randomRoles.length; roleRetryNum++) {
                     var availableRetryRoles = comp[randomRoles[roleRetryNum]];
                     for (var x = 0; x < availableRetryRoles.length; x++) {
                         if (person[availableRetryRoles[x]] > 0) {
                             raidComp[randomRoles[roleRetryNum]] = { name: person.name, skill: person[availableRetryRoles[x]], profession: availableRetryRoles[x] };
+                            replacementRoleFound = true;
+                            break;
                         }
                     }
-                }
-
-                var personFound = false;
-                for (var assignedRolesNum = 0; assignedRolesNum < Object.keys(raidComp).length; assignedRolesNum++) {
-                    if (raidComp[Object.keys(raidComp)[assignedRolesNum]].name == person.name) {
-                        //person already added;
-                        personFound = true;
+                    if (replacementRoleFound) {
                         break;
                     }
                 }
-                if (personFound == false) {
+
+                if (replacementRoleFound == false) {
                     alert("could not find a place for: " + person.name);
                     return;
                 }
@@ -228,7 +217,7 @@ function buildRaidCompText(comp, compArray) {
     $('#myform').hide();
 
     var displayText = '';
-    
+
     for (var i = 0; i < compArray.length; i++) {
         var compElement = compArray[i];
         displayText +=
