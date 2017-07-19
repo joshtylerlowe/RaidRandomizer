@@ -103,6 +103,7 @@ function fetchRandomReasonablePersonRole(object, roles) {
     return randomizeArray(possiblePersonRoles)[0];
 }
 
+var jsonObject;
 $(document).ready(function () {
     $("#myfile").on("change", function (changeEvent) {
         for (var i = 0; i < changeEvent.target.files.length; ++i) {
@@ -115,7 +116,8 @@ $(document).ready(function () {
                         alert("Error while reading file " + file.name + ": " + loadEvent.target.error);
                         return;
                     }
-                    run($.parseJSON(CSV2JSON(loadEvent.target.result)));
+                    jsonObject = $.parseJSON(CSV2JSON(loadEvent.target.result));
+                    $('#myform').hide();
                 };
                 loader.readAsText(file);
 
@@ -126,10 +128,14 @@ $(document).ready(function () {
 
 
 var buildingTries = 0;
-function run(jsonObject) {
+function run() {
+    if (!jsonObject) {
+        alert('no csv uploaded to read');
+        return;
+    }
+
     var raidComp = {};
     var comp = getCompFromName($('#compSelect').val());
-    var prestineCompOrder = $.extend([], comp.compOrder);
 
     //randomize roles
     var randomRoles = randomizeArray(comp.compOrder);
@@ -187,17 +193,20 @@ function run(jsonObject) {
 
     //don't blow up your computer
     if (buildingTries >= 50){
+        buildingTries = 0;
         alert("could not build a comp above the ability threshold after " + buildingTries + " tries");
         return;
     }
 
     //check comp's ability (25+)
-    if(compAbilityTotal(raidComp) < 25) {
+    if(compAbilityTotal(raidComp) < 25 || compIsFull(raidComp, comp.compOrder.length) == false) {
         buildingTries++;
-        run(jsonObject);
+        run();
+        return;
     } else {
+        buildingTries = 0;
         //build copy/paste-able text for assigning roles
-        buildRaidCompText(raidComp, prestineCompOrder);
+        buildRaidCompText(raidComp, comp.compOrder.sort());
     }
 };
 
@@ -213,18 +222,31 @@ function compAbilityTotal(comp) {
     return sum;
 }
 
-function buildRaidCompText(comp, compArray) {
-    $('#myform').hide();
+function compIsFull(comp, desiredLength) {
+    return Object.keys(comp).length == desiredLength;
+}
 
+function buildRaidCompText(comp, compArray) {
     var displayText = '';
 
     for (var i = 0; i < compArray.length; i++) {
         var compElement = compArray[i];
+        if (!comp[compElement]) {
+            debugger;
+        }
         displayText +=
             '<div>' +
             compElement.split(/(?=[A-Z])/).join(" ") + ': ' + comp[compElement].name + '(' + comp[compElement].profession + ')';
             '</div>';
     }
+
+    var ability = compAbilityTotal(comp);
+    var totalPossibleAbility = compArray.length;
+
+    displayText +=
+        '<div>' +
+        'Cofidence: ' + Math.floor((ability/(totalPossibleAbility*3)) * 100) + '% (' + ability + '/' + (totalPossibleAbility*3) + ')'
+        '</div>';
 
     $('.mainContent').html(displayText);
 }
