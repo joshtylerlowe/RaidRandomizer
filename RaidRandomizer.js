@@ -133,10 +133,11 @@ $(document).ready(function () {
     });
 });
 
-var raidComp = {};
 
+var buildingTries = 0;
 function run(jsonObject) {
-    var comp = vgComp; //TODO: change to currently selected "comp" dropdown on UI
+    var raidComp = {};
+    var comp = deimosComp; //TODO: change to currently selected "comp" dropdown on UI
 
     //randomize roles
     var randomRoles = randomizeArray(comp.compOrder);
@@ -149,8 +150,15 @@ function run(jsonObject) {
             var role = randomRoles[roleNum];
             var person = randomPeople[personNum];
 
-            if (Object.values(raidComp).indexOf(person.name) > -1) {
-                //person already added;
+            var continueOut = false;
+            for (var assignedRolesNum = 0; assignedRolesNum < Object.keys(raidComp).length; assignedRolesNum++) {
+                if (raidComp[Object.keys(raidComp)[assignedRolesNum]].name == person.name) {
+                    //person already added;
+                    continueOut = true;
+                    break;
+                }
+            }
+            if (continueOut) {
                 continue;
             }
 
@@ -158,28 +166,61 @@ function run(jsonObject) {
 
             //set person to role
             if (randomPersonRole && randomPersonRole.length > 0) {
-                raidComp[role] = person.name;
+                raidComp[role] = { name: person.name, skill: person[randomPersonRole], profession: randomPersonRole };
                 break;
             } else {
                 //if no role found, pick random role that the person CAN fill and set it
-
                 for (var roleRetryNum = 0; roleRetryNum < randomRoles.length; roleRetryNum++) {
                     var availableRetryRoles = comp[randomRoles[roleRetryNum]];
                     for (var x = 0; x < availableRetryRoles.length; x++) {
                         if (person[availableRetryRoles[x]] > 0) {
-                            raidComp[randomRoles[roleRetryNum]] = person.name;
+                            raidComp[randomRoles[roleRetryNum]] = { name: person.name, skill: person[availableRetryRoles[x]], profession: availableRetryRoles[x] };
                         }
                     }
                 }
-                if (Object.values(raidComp).indexOf(person.name) == -1) {
+
+                var personFound = false;
+                for (var assignedRolesNum = 0; assignedRolesNum < Object.keys(raidComp).length; assignedRolesNum++) {
+                    if (raidComp[Object.keys(raidComp)[assignedRolesNum]].name == person.name) {
+                        //person already added;
+                        personFound = true;
+                    }
+                }
+                if (personFound == false) {
                     alert("could not find a place for: " + person.name);
                     return;
                 }
             }
         }
     }
+
+    //don't blow up your computer
+    if (buildingTries >= 50){
+        alert("could not build a comp above the ability threshold after " + buildingTries + " tries");
+        return;
+    }
+
+    //check comp's ability (25+)
+    if(compAbilityTotal(raidComp) < 25) {
+        buildingTries++;
+        run(jsonObject);
+    } else {
+        //build copy/paste-able text for assigning roles
+        buildRaidCompText(raidComp);
+    }
 };
 
+function compAbilityTotal(comp) {
+    var sum = 0;
+    for (var prop in comp) {
+        sum += parseInt(comp[prop].skill);
+    }
+    return sum;
+}
+
+function buildRaidCompText() {
+
+}
 
 
 var vgComp = {
