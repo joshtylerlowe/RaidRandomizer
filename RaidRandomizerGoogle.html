@@ -1,4 +1,4 @@
-<html>
+﻿<html>
 <head>
     <title>Raid Randomizer</title>
     <link rel="shortcut icon" type="image/png" href="dicefav.png" />
@@ -6,7 +6,6 @@
 <body>
     <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.8.2/jquery.min.js"></script>
     <script src="RaidRandomizer.js"></script>
-    <script src="GoogleSheetsAPITool.js"></script>
     <button id="authorize-button" style="display: none;">Use Google Sheet</button>
     <button id="signout-button" style="display: none;">Sign Out</button>
     <select id="compSelect">
@@ -38,12 +37,15 @@
             <option value="w4Comp">Wing 4</option>
         </optgroup>
     </select>
-    <form id="myform">
-        <input id="myfile" name="files[]" multiple="" type="file" />
-    </form>
     <input type="button" onclick="run()" value="Randomize!" />
     <div class="mainContent">
 
     </div>
+
+    <script src="GoogleSheetsAPITool.js"></script>
+    <script async defer src="https://apis.google.com/js/api.js"
+            onload="this.onload=function(){};handleClientLoad()"
+            onreadystatechange="if (this.readyState === 'complete') this.onload()">
+    </script>
 </body>
 </html>

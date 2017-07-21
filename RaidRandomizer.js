@@ -137,7 +137,7 @@ function run() {
     var raidComp = {};
     var comp = getCompFromName($('#compSelect').val());
 
-    //randomize roles
+    //randomize roles & people
     var randomRoles = randomizeArray(comp.compOrder);
     var randomPeople = randomizeArray(jsonObject);
 
@@ -432,4 +432,18 @@ var deimosComp = {
     DPSTwo: ['condi ranger'],
     DPSThree: ['condi ranger'],
     compOrder: ['ChronoTank', 'OffChrono', 'OilKiter', 'Healer', 'HandKiter', 'StrengthPS', 'DisciplinePS', 'DPSOne', 'DPSTwo', 'DPSThree']
+};
+
+var w1Comp = {
+    ChronoTank: ['chronotank'],
+    OffChrono: ['zerker chrono'],
+    GroupHealer: ['magi druid'],
+    ObjectiveHealer: ['magi druid'],
+    StrengthPS: ['condi PS'],
+    DisciplinePS: ['condi PS'],
+    CondiDPSOne: ['condi ranger'],
+    CondiDPSTwo: ['condi ranger'],
+    EleOne: ['staff tempest', 'x/wh tempest'],
+    EleTwo: ['staff tempest', 'x/wh tempest'],
+    compOrder: ['ChronoTank', 'OffChrono', 'GroupHealer', 'ObjectiveHealer', 'StrengthPS', 'DisciplinePS', 'CondiDPSOne', 'CondiDPSTwo', 'EleOne', 'EleTwo']
 };
