@@ -193,8 +193,8 @@ function run() {
 
     //don't blow up your computer
     if (buildingTries >= 50){
-        buildingTries = 0;
         alert("could not build a comp above the ability threshold after " + buildingTries + " tries");
+        buildingTries = 0;
         return;
     }
 
