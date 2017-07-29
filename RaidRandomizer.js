@@ -128,6 +128,7 @@ $(document).ready(function () {
 
 
 var buildingTries = 0;
+var compToUse = getCompFromName($('#compSelect').val());
 function run() {
     if (!jsonObject) {
         alert('failed to load people');
@@ -135,7 +136,7 @@ function run() {
     }
 
     var raidComp = {};
-    var comp = getCompFromName($('#compSelect').val());
+    var comp = compToUse;//getCompFromName($('#compSelect').val());
 
     //randomize roles & people
     var randomRoles = randomizeArray(comp.compOrder);
@@ -193,20 +194,20 @@ function run() {
 
     //don't blow up your computer
     if (buildingTries >= 50){
-        buildingTries = 0;
         alert("could not build a comp above the ability threshold after " + buildingTries + " tries");
+        buildingTries = 0;
         return;
     }
 
     //check comp's ability (25+)
-    if(compAbilityTotal(raidComp) < 25 || compIsFull(raidComp, comp.compOrder.length) == false) {
+    if(compAbilityTotal(raidComp) < 25 || compIsFull(raidComp, randomRoles.length) == false) {
         buildingTries++;
         run();
         return;
     } else {
         buildingTries = 0;
         //build copy/paste-able text for assigning roles
-        buildRaidCompText(raidComp, comp.compOrder.sort());
+        buildRaidCompText(raidComp, randomRoles.sort());
     }
 };
 
@@ -236,7 +237,7 @@ function buildRaidCompText(comp, compArray) {
         }
         displayText +=
             '<div>' +
-            compElement.split(/(?=[A-Z])/).join(" ") + ': ' + comp[compElement].name + '(' + comp[compElement].profession + ')';
+            compElement + ': ' + comp[compElement].name + '(' + comp[compElement].profession + ')';
             '</div>';
     }
 
@@ -251,6 +252,19 @@ function buildRaidCompText(comp, compArray) {
     $('.mainContent').html(displayText);
 }
 
+vgComp2 = {
+    'Chrono Tank': ['Chronotank'],
+    'Off Chrono': ['Zerker Chrono'],
+    'Healer One': ['Magi Druid'],
+    'Healer Two': ['Magi Druid', 'Condi Druid'],
+    'Strength PS': ['Condi PS'],
+    'Discipline PS': ['Condi PS'],
+    'Condi DPS One': ['Condi Ranger', 'Condi Thief', 'Condi Engi', 'Condi Tempest'],
+    'Condi DPS Two': ['Condi Ranger', 'Condi Thief', 'Condi Engi', 'Condi Tempest'],
+    'General DPS One': ['Condi Ranger', 'Condi Thief', 'Condi Engi', 'Condi Tempest', 'Zerk DH', 'Zerk Tempest'],
+    'General DPS Two': ['Condi Ranger', 'Condi Thief', 'Condi Engi', 'Condi Tempest', 'Zerk DH', 'Zerk Tempest'],
+    compOrder: ['Chrono Tank', 'Off Chrono', 'Healer One', 'Healer Two', 'Strength PS', 'Discipline PS', 'Condi DPS One', 'Condi DPS Two', 'General DPS One', 'General DPS Two']
+}
 
 var vgComp = {
     ChronoTank: ['chronotank'],

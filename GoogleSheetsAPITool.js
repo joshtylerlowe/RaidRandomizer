@@ -75,11 +75,19 @@ function makePerson(labels, row) {
     return personObject;
 }
 
+function makeRole(row) {
+    var roles = [];
+    for (var i = 1; i < row.length; i++) {
+        roles.push(row[i]);
+    }
+    return roles;
+}
+
 function fetchPeopleFromSpreadsheet() {
     jsonObject = [];
     gapi.client.sheets.spreadsheets.values.get({
         spreadsheetId: '13AqbYSAQae9WSInM7dK5heqHahk4yT2zg21iHXroHRE',
-        range: 'Sheet1!A1:Z',
+        range: "'WIP Comp List'!A1:Z",
     }).then(function (response) {
         var range = response.result;
         if (range.values.length > 0) {
@@ -94,4 +102,26 @@ function fetchPeopleFromSpreadsheet() {
     }, function (response) {
         alert('Error: ' + response.result.error.message);
     });
+}
+
+function fetchRolesFromSpreadsheet() {
+    compToUse = {compOrder:[]};
+    gapi.client.sheets.spreadsheets.values.get({
+        spreadsheetId: '13AqbYSAQae9WSInM7dK5heqHahk4yT2zg21iHXroHRE',
+        range: "'WIP Boss List'!A2:Z",
+    }).then(function (response) {
+        var range = response.result;
+        if (range.values.length > 0) {
+            for (i = 0; i < range.values.length; i++) {
+                var row = range.values[i];
+                compToUse[row[0]] = makeRole(row);
+                compToUse.compOrder.push(row[0]);
+            }
+        } else {
+            alert('No data found.');
+        }
+    }, function (response) {
+        alert('Error: ' + response.result.error.message);
+    });
+    debugger;
 }
