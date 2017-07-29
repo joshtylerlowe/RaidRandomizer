@@ -124,11 +124,16 @@ $(document).ready(function () {
             })(changeEvent.target.files[i]);
         }
     });
+
+    $('#compSelect').on("change", function () {
+        fetchCompFromSpreadsheet($('#compSelect').val());
+    });
+    
 });
 
-
+var maxBuildTries = 100;
 var buildingTries = 0;
-var compToUse = getCompFromName($('#compSelect').val());
+var compToUse;
 function run() {
     if (!jsonObject) {
         alert('failed to load people');
@@ -136,7 +141,7 @@ function run() {
     }
 
     var raidComp = {};
-    var comp = compToUse;//getCompFromName($('#compSelect').val());
+    var comp = compToUse;
 
     //randomize roles & people
     var randomRoles = randomizeArray(comp.compOrder);
@@ -193,7 +198,7 @@ function run() {
     }
 
     //don't blow up your computer
-    if (buildingTries >= 50){
+    if (buildingTries >= maxBuildTries){
         alert("could not build a comp above the ability threshold after " + buildingTries + " tries");
         buildingTries = 0;
         return;

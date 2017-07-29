@@ -47,6 +47,7 @@ function updateSigninStatus(isSignedIn) {
         authorizeButton.style.display = 'none';
         signoutButton.style.display = 'block';
         fetchPeopleFromSpreadsheet();
+        fetchCompFromSpreadsheet('VG');
     } else {
         authorizeButton.style.display = 'block';
         signoutButton.style.display = 'none';
@@ -77,7 +78,7 @@ function makePerson(labels, row) {
 
 function makeRole(row) {
     var roles = [];
-    for (var i = 1; i < row.length; i++) {
+    for (var i = 2; i < row.length; i++) {
         roles.push(row[i]);
     }
     return roles;
@@ -87,7 +88,7 @@ function fetchPeopleFromSpreadsheet() {
     jsonObject = [];
     gapi.client.sheets.spreadsheets.values.get({
         spreadsheetId: '13AqbYSAQae9WSInM7dK5heqHahk4yT2zg21iHXroHRE',
-        range: "'WIP Comp List'!A1:Z",
+        range: "'Comp List'!A1:Z",
     }).then(function (response) {
         var range = response.result;
         if (range.values.length > 0) {
@@ -104,24 +105,45 @@ function fetchPeopleFromSpreadsheet() {
     });
 }
 
-function fetchRolesFromSpreadsheet() {
-    compToUse = {compOrder:[]};
+function fetchCompFromSpreadsheet(sheetName) {
+    var rows = [];
     gapi.client.sheets.spreadsheets.values.get({
         spreadsheetId: '13AqbYSAQae9WSInM7dK5heqHahk4yT2zg21iHXroHRE',
-        range: "'WIP Boss List'!A2:Z",
+        range: "'" + sheetName + "'!A1:Z",
     }).then(function (response) {
         var range = response.result;
         if (range.values.length > 0) {
             for (i = 0; i < range.values.length; i++) {
-                var row = range.values[i];
-                compToUse[row[0]] = makeRole(row);
-                compToUse.compOrder.push(row[0]);
+                rows.push(range.values[i]);
             }
+
+            makeCompFromData(rows);
         } else {
             alert('No data found.');
         }
     }, function (response) {
         alert('Error: ' + response.result.error.message);
     });
-    debugger;
+}
+
+function makeCompFromData(rows) {
+    var chosenComp = rows[0][2];
+    var foundComp = false;
+
+    for (var rowCount = 1; rowCount < rows.length; rowCount++) {
+        if (rows[rowCount][0] == chosenComp) {
+            foundComp = true;
+        }
+
+        if (foundComp) {
+            compToUse = { compOrder: [] };
+            for (i = rowCount + 2; i < rowCount + 12; i++) {
+                compToUse[rows[i][1]] = makeRole(rows[i]);
+                compToUse.compOrder.push(rows[i][1]);
+            }
+            return;
+        }
+    }
+
+    alert('could not find comp by name: ' + chosenComp);
 }
