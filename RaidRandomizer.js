@@ -130,7 +130,7 @@ $(document).ready(function () {
 var buildingTries = 0;
 function run() {
     if (!jsonObject) {
-        alert('no csv uploaded to read');
+        alert('failed to load people');
         return;
     }
 
