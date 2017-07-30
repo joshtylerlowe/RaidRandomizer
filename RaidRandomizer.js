@@ -1,75 +1,8 @@
-﻿// Source: http://www.bennadel.com/blog/1504-Ask-Ben-Parsing-CSV-Strings-With-Javascript-Exec-Regular-Expression-Command.htm
-// This will parse a delimited string into an array of
-// arrays. The default delimiter is the comma, but this
-// can be overriden in the second argument.
-function CSVToArray(strData, strDelimiter) {
-    // Check to see if the delimiter is defined. If not,
-    // then default to comma.
-    strDelimiter = (strDelimiter || ",");
-    // Create a regular expression to parse the CSV values.
-    var objPattern = new RegExp((
-    // Delimiters.
-    "(\\" + strDelimiter + "|\\r?\\n|\\r|^)" +
-    // Quoted fields.
-    "(?:\"([^\"]*(?:\"\"[^\"]*)*)\"|" +
-    // Standard fields.
-    "([^\"\\" + strDelimiter + "\\r\\n]*))"), "gi");
-    // Create an array to hold our data. Give the array
-    // a default empty first row.
-    var arrData = [[]];
-    // Create an array to hold our individual pattern
-    // matching groups.
-    var arrMatches = null;
-    // Keep looping over the regular expression matches
-    // until we can no longer find a match.
-    while (arrMatches = objPattern.exec(strData)) {
-        // Get the delimiter that was found.
-        var strMatchedDelimiter = arrMatches[1];
-        // Check to see if the given delimiter has a length
-        // (is not the start of string) and if it matches
-        // field delimiter. If id does not, then we know
-        // that this delimiter is a row delimiter.
-        if (strMatchedDelimiter.length && (strMatchedDelimiter != strDelimiter)) {
-            // Since we have reached a new row of data,
-            // add an empty row to our data array.
-            arrData.push([]);
-        }
-        // Now that we have our delimiter out of the way,
-        // let's check to see which kind of value we
-        // captured (quoted or unquoted).
-        if (arrMatches[2]) {
-            // We found a quoted value. When we capture
-            // this value, unescape any double quotes.
-            var strMatchedValue = arrMatches[2].replace(
-            new RegExp("\"\"", "g"), "\"");
-        } else {
-            // We found a non-quoted value.
-            var strMatchedValue = arrMatches[3];
-        }
-        // Now that we have our value string, let's add
-        // it to the data array.
-        arrData[arrData.length - 1].push(strMatchedValue);
-    }
-    // Return the parsed data.
-    return (arrData);
-}
-
-function CSV2JSON(csv) {
-    var array = CSVToArray(csv);
-    var objArray = [];
-    for (var i = 1; i < array.length; i++) {
-        objArray[i - 1] = {};
-        for (var k = 0; k < array[0].length && k < array[i].length; k++) {
-            var key = array[0][k];
-            objArray[i - 1][key] = array[i][k]
-        }
-    }
-
-    var json = JSON.stringify(objArray);
-    var str = json.replace(/},/g, "},\r\n");
-
-    return str;
-}
+﻿$(document).ready(function () {
+    $('#compSelect').on("change", function () {
+        fetchCompFromSpreadsheet($('#compSelect').val());
+    });
+});
 
 function randomizeArray(array) {
     var currentIndex = array.length, temporaryValue, randomIndex;
@@ -104,33 +37,6 @@ function fetchRandomReasonablePersonRole(object, roles) {
 }
 
 var jsonObject;
-$(document).ready(function () {
-    $("#myfile").on("change", function (changeEvent) {
-        for (var i = 0; i < changeEvent.target.files.length; ++i) {
-            (function (file) {
-                var loader = new FileReader();
-                loader.onload = function (loadEvent) {
-                    if (loadEvent.target.readyState != 2)
-                        return;
-                    if (loadEvent.target.error) {
-                        alert("Error while reading file " + file.name + ": " + loadEvent.target.error);
-                        return;
-                    }
-                    jsonObject = $.parseJSON(CSV2JSON(loadEvent.target.result));
-                    $('#myform').hide();
-                };
-                loader.readAsText(file);
-
-            })(changeEvent.target.files[i]);
-        }
-    });
-
-    $('#compSelect').on("change", function () {
-        fetchCompFromSpreadsheet($('#compSelect').val());
-    });
-    
-});
-
 var maxBuildTries = 100;
 var buildingTries = 0;
 var compToUse;
@@ -211,8 +117,25 @@ function run() {
         return;
     } else {
         buildingTries = 0;
+
         //build copy/paste-able text for assigning roles
-        buildRaidCompText(raidComp, randomRoles.sort());
+        var discordText = buildRaidCompTextDiscord(raidComp, randomRoles.sort());
+        var gw2Text = buildRaidCompTextGW2(raidComp, randomRoles.sort());
+        var displayText =
+            '<div style="font-size:20px;font-weight:bold;">Discord:</div>' +
+            discordText +
+            '<div style="font-size:20px;font-weight:bold;">GW2:</div>' +
+            gw2Text;
+
+        var ability = compAbilityTotal(raidComp);
+        var totalPossibleAbility = randomRoles.length;
+
+        displayText +=
+            '<div>' +
+            'Confidence: ' + Math.floor((ability / (totalPossibleAbility * 3)) * 100) + '% (' + ability + '/' + (totalPossibleAbility * 3) + ')' +
+            '</div>';
+
+        $('.mainContent').html(displayText);
     }
 };
 
@@ -232,237 +155,44 @@ function compIsFull(comp, desiredLength) {
     return Object.keys(comp).length == desiredLength;
 }
 
-function buildRaidCompText(comp, compArray) {
+function buildRaidCompTextDiscord(comp, compArray) {
     var displayText = '';
-
+    
     for (var i = 0; i < compArray.length; i++) {
         var compElement = compArray[i];
-        if (!comp[compElement]) {
-            debugger;
-        }
+
         displayText +=
             '<div>' +
-            compElement + ': ' + comp[compElement].name + '(' + comp[compElement].profession + ')';
+            compElement + ': ' + comp[compElement].name + ' (' + comp[compElement].profession + ')' +
             '</div>';
     }
 
-    var ability = compAbilityTotal(comp);
-    var totalPossibleAbility = compArray.length;
-
-    displayText +=
-        '<div>' +
-        'Confidence: ' + Math.floor((ability/(totalPossibleAbility*3)) * 100) + '% (' + ability + '/' + (totalPossibleAbility*3) + ')'
-        '</div>';
-
-    $('.mainContent').html(displayText);
+    return displayText;
 }
 
-vgComp2 = {
-    'Chrono Tank': ['Chronotank'],
-    'Off Chrono': ['Zerker Chrono'],
-    'Healer One': ['Magi Druid'],
-    'Healer Two': ['Magi Druid', 'Condi Druid'],
-    'Strength PS': ['Condi PS'],
-    'Discipline PS': ['Condi PS'],
-    'Condi DPS One': ['Condi Ranger', 'Condi Thief', 'Condi Engi', 'Condi Tempest'],
-    'Condi DPS Two': ['Condi Ranger', 'Condi Thief', 'Condi Engi', 'Condi Tempest'],
-    'General DPS One': ['Condi Ranger', 'Condi Thief', 'Condi Engi', 'Condi Tempest', 'Zerk DH', 'Zerk Tempest'],
-    'General DPS Two': ['Condi Ranger', 'Condi Thief', 'Condi Engi', 'Condi Tempest', 'Zerk DH', 'Zerk Tempest'],
-    compOrder: ['Chrono Tank', 'Off Chrono', 'Healer One', 'Healer Two', 'Strength PS', 'Discipline PS', 'Condi DPS One', 'Condi DPS Two', 'General DPS One', 'General DPS Two']
+function buildRaidCompTextGW2(comp, compArray) {
+    var displayText = '';
+    var characterCount = 0;
+    var pageCount = 1;
+
+    for (var i = 0; i < compArray.length; i++) {
+        var compElement = compArray[i];
+        var personName = comp[compElement].name;
+        var separator = ': ';
+        var spacer = ' | ';
+        characterCount += compElement.length + personName.length + separator.length + spacer.length;
+        if (characterCount > 199) {
+            displayText +=
+                '<div>---------page ' +
+                pageCount++ +
+                '-----------</div>';
+            characterCount = 0;
+        }
+        displayText +=
+            '<div>' +
+            compElement + separator + personName + spacer +
+            '</div>';
+    }
+
+    return displayText;
 }
-
-var vgComp = {
-    ChronoTank: ['chronotank'],
-    OffChrono: ['zerker chrono'],
-    HealerOne: ['magi druid'],
-    HealerTwo: ['magi druid', 'condi druid'],
-    StrengthPS: ['condi PS'],
-    DisciplinePS: ['condi PS'],
-    CondiDPSOne: ['condi ranger', 'condi thief', 'condi engi', 'condi tempest'],
-    CondiDPSTwo: ['condi ranger', 'condi thief', 'condi engi', 'condi tempest'],
-    GeneralDPSOne: ['condi ranger', 'condi thief', 'condi engi', 'condi tempest', 'DH', 'staff tempest', 'x/wh tempest'],
-    GeneralDPSTwo: ['condi ranger', 'condi thief', 'condi engi', 'condi tempest', 'DH', 'staff tempest', 'x/wh tempest'],
-    compOrder: ['ChronoTank', 'OffChrono', 'HealerOne', 'HealerTwo', 'StrengthPS', 'DisciplinePS', 'CondiDPSOne', 'CondiDPSTwo', 'GeneralDPSOne', 'GeneralDPSTwo']
-};
-
-var gorsComp = {
-    ChronoTank: ['chronotank'],
-    OffChrono: ['zerker chrono'],
-    HealerOne: ['magi druid'],
-    HealerTwo: ['magi druid'],
-    StrengthPS: ['condi PS'],
-    DisciplinePS: ['condi PS'],
-    OrbEleOne: ['staff tempest'],
-    OrbEleTwo: ['staff tempest'],
-    DPSOne: ['condi ranger', 'condi thief', 'condi engi', 'condi tempest', 'DH', 'staff tempest', 'x/wh tempest'],
-    DPSTwo: ['condi ranger', 'condi thief', 'condi engi', 'condi tempest', 'DH', 'staff tempest', 'x/wh tempest'],
-    compOrder: ['ChronoTank', 'OffChrono', 'HealerOne', 'HealerTwo', 'StrengthPS', 'DisciplinePS', 'OrbEleOne', 'OrbEleTwo', 'DPSOne', 'DPSTwo']
-};
-
-var sabComp = {
-    ChronoOne: ['chronotank', 'zerker chrono'],
-    ChronoTwo: ['chronotank', 'zerker chrono'],
-    Healer: ['magi druid'],
-    FlakKiter: ['magi druid'],
-    StrengthPS: ['condi PS'],
-    DisciplinePS: ['condi PS'],
-    OddCannons: ['staff tempest', 'x/wh tempest'],
-    EvenCannons: ['staff tempest', 'x/wh tempest'],
-    DPSOne: ['condi ranger', 'condi thief', 'condi engi', 'condi tempest', 'DH', 'staff tempest', 'x/wh tempest'],
-    DPSTwo: ['condi ranger', 'condi thief', 'condi engi', 'condi tempest', 'DH', 'staff tempest', 'x/wh tempest'],
-    compOrder: ['ChronoOne', 'ChronoTwo', 'Healer', 'FlakKiter', 'StrengthPS', 'DisciplinePS', 'OddCannons', 'EvenCannons', 'DPSOne', 'DPSTwo']
-};
-
-var slothComp = {
-    ChronoOne: ['chronotank', 'zerker chrono'],
-    ChronoTwo: ['chronotank', 'zerker chrono'],
-    HealerOne: ['magi druid'],
-    HealerTwo: ['magi druid'],
-    StrengthPS: ['condi PS'],
-    DisciplinePS: ['condi PS'],
-    DPSOne: ['condi ranger', 'condi tempest', 'staff tempest', 'x/wh tempest', 'condi reaper'],
-    DPSTwo: ['condi ranger', 'condi tempest', 'staff tempest', 'x/wh tempest', 'condi reaper'],
-    DPSThree: ['condi ranger', 'condi tempest', 'staff tempest', 'x/wh tempest', 'condi reaper'],
-    DPSFour: ['condi ranger', 'condi tempest', 'staff tempest', 'x/wh tempest', 'condi reaper'],
-    compOrder: ['ChronoOne', 'ChronoTwo', 'HealerOne', 'HealerTwo', 'StrengthPS', 'DisciplinePS', 'DPSOne', 'DPSTwo', 'DPSThree', 'DPSFour']
-};
-
-var trioComp = {
-    ChronoOne: ['chronotank', 'zerker chrono'],
-    ChronoTwo: ['chronotank', 'zerker chrono'],
-    HealerOne: ['magi druid'],
-    HealerTwo: ['magi druid', 'condi druid'],
-    StrengthPS: ['condi PS'],
-    DisciplinePS: ['condi PS'],
-    DPSOne: ['condi ranger', 'condi tempest', 'staff tempest', 'x/wh tempest', 'condi reaper', 'condi engi'],
-    DPSTwo: ['condi ranger', 'condi tempest', 'staff tempest', 'x/wh tempest', 'condi reaper', 'condi engi'],
-    DPSThree: ['condi ranger', 'condi tempest', 'staff tempest', 'x/wh tempest', 'condi reaper', 'condi engi'],
-    DPSFour: ['condi ranger', 'condi tempest', 'staff tempest', 'x/wh tempest', 'condi reaper', 'condi engi'],
-    compOrder: ['ChronoOne', 'ChronoTwo', 'HealerOne', 'HealerTwo', 'StrengthPS', 'DisciplinePS', 'DPSOne', 'DPSTwo', 'DPSThree', 'DPSFour']
-};
-
-var mattComp = {
-    ChronoOne: ['chronotank', 'zerker chrono'],
-    ChronoTwo: ['chronotank', 'zerker chrono'],
-    Auramancer: ['heal tempest'],
-    MagiDruid: ['magi druid'],
-    CondiDruid: ['condi druid'],
-    StrengthPS: ['condi PS'],
-    DisciplinePS: ['condi PS'],
-    DPSOne: ['condi ranger', 'condi tempest', 'condi reaper', 'condi mes'],
-    DPSTwo: ['condi ranger', 'condi tempest', 'condi reaper', 'condi mes'],
-    DPSThree: ['condi ranger', 'condi tempest', 'condi reaper', 'condi mes'],
-    compOrder: ['ChronoOne', 'ChronoTwo', 'Auramancer', 'MagiDruid', 'CondiDruid', 'StrengthPS', 'DisciplinePS', 'DPSOne', 'DPSTwo', 'DPSThree']
-};
-
-var escortComp = {
-    ShroomChrono: ['chronotank', 'zerker chrono'],
-    OffChrono: ['chronotank', 'zerker chrono'],
-    Babysitter: ['magi druid'],
-    Healer: ['magi druid', 'condi druid'],
-    StrengthPS: ['condi PS'],
-    DisciplinePS: ['condi PS'],
-    DPSOne: ['condi ranger', 'condi tempest', 'staff tempest', 'x/wh tempest', 'condi reaper', 'condi engi', 'DH'],
-    DPSTwo: ['condi ranger', 'condi tempest', 'staff tempest', 'x/wh tempest', 'condi reaper', 'condi engi', 'DH'],
-    DPSThree: ['condi ranger', 'condi tempest', 'staff tempest', 'x/wh tempest', 'condi reaper', 'condi engi', 'DH'],
-    DPSFour: ['condi ranger', 'condi tempest', 'staff tempest', 'x/wh tempest', 'condi reaper', 'condi engi', 'DH'],
-    compOrder: ['ShroomChrono', 'OffChrono', 'Babysitter', 'Healer', 'StrengthPS', 'DisciplinePS', 'DPSOne', 'DPSTwo', 'DPSThree', 'DPSFour']
-};
-
-var kcComp = {
-    ChronoTank: ['chronotank'],
-    OffChrono: ['zerker chrono'],
-    HealerOne: ['magi druid'],
-    HealerTwo: ['magi druid'],
-    StrengthPS: ['condi PS'],
-    DisciplinePS: ['condi PS'],
-    DPSOne: ['staff tempest', 'DH'],
-    DPSTwo: ['staff tempest'],
-    DPSThree: ['staff tempest'],
-    DPSFour: ['staff tempest'],
-    compOrder: ['ChronoTank', 'OffChrono', 'HealerOne', 'HealerTwo', 'StrengthPS', 'DisciplinePS', 'DPSOne', 'DPSTwo', 'DPSThree', 'DPSFour']
-};
-
-var xeraComp = {
-    ChronoTank: ['chronotank'],
-    OffChrono: ['zerker chrono'],
-    HealerOne: ['magi druid'],
-    HealerTwo: ['magi druid'],
-    StrengthPS: ['condi PS'],
-    DisciplinePS: ['condi PS'],
-    OrbEleLeft: ['staff tempest'],
-    OrbEleRight: ['staff tempest'],
-    DPSOne: ['staff tempest', 'x/wh tempest', 'condi ranger'],
-    DPSTwo: ['staff tempest', 'x/wh tempest', 'condi ranger'],
-    compOrder: ['ChronoTank', 'OffChrono', 'HealerOne', 'HealerTwo', 'StrengthPS', 'DisciplinePS', 'OrbEleLeft', 'OrbEleRight', 'DPSOne', 'DPSTwo']
-};
-
-var cairnComp = {
-    ChronoOne: ['chronotank', 'zerker chrono'],
-    ChronoTwo: ['chronotank', 'zerker chrono'],
-    HealerOne: ['magi druid'],
-    HealerTwo: ['magi druid'],
-    StrengthPS: ['condi PS'],
-    DisciplinePS: ['condi PS'],
-    DPSOne: ['condi ranger', 'condi tempest', 'condi reaper', 'condi engi', 'condi thief', 'condi mes'],
-    DPSTwo: ['condi ranger', 'condi tempest', 'condi engi', 'condi thief', 'condi mes'],
-    DPSThree: ['condi ranger', 'condi tempest', 'condi thief', 'condi mes'],
-    DPSFour: ['condi ranger', 'condi tempest', 'condi thief', 'condi mes'],
-    compOrder: ['ChronoOne', 'ChronoTwo', 'HealerOne', 'HealerTwo', 'StrengthPS', 'DisciplinePS', 'DPSOne', 'DPSTwo', 'DPSThree', 'DPSFour']
-};
-
-var moComp = {
-    ChronoOne: ['chronotank', 'zerker chrono'],
-    ChronoTwo: ['chronotank', 'zerker chrono'],
-    HealerOne: ['magi druid', 'condi druid'],
-    HealerTwo: ['magi druid', 'condi druid'],
-    StrengthPS: ['condi PS'],
-    DisciplinePS: ['condi PS'],
-    EpiReaper: ['condi reaper'],
-    DPSOne: ['condi ranger', 'condi tempest', 'condi reaper', 'condi engi', 'condi thief'],
-    DPSTwo: ['condi ranger', 'condi tempest', 'condi engi', 'condi thief'],
-    DPSThree: ['condi ranger', 'condi tempest', 'condi thief'],
-    compOrder: ['ChronoOne', 'ChronoTwo', 'HealerOne', 'HealerTwo', 'StrengthPS', 'DisciplinePS', 'EpiReaper', 'DPSOne', 'DPSTwo', 'DPSThree']
-};
-
-var samComp = {
-    ChronoOne: ['chronotank', 'zerker chrono'],
-    ChronoTwo: ['chronotank', 'zerker chrono'],
-    HealerOne: ['magi druid'],
-    HealerTwo: ['magi druid'],
-    StrengthPS: ['condi PS'],
-    DisciplinePS: ['condi PS'],
-    DPSOne: ['condi ranger', 'condi tempest', 'condi reaper', 'condi engi', 'condi thief'],
-    DPSTwo: ['condi ranger', 'condi tempest', 'condi thief'],
-    DPSThree: ['condi ranger', 'condi tempest', 'condi thief'],
-    DPSFour: ['condi ranger', 'condi tempest', 'condi thief'],
-    compOrder: ['ChronoOne', 'ChronoTwo', 'HealerOne', 'HealerTwo', 'StrengthPS', 'DisciplinePS', 'DPSOne', 'DPSTwo', 'DPSThree', 'DPSFour']
-};
-
-var deimosComp = {
-    ChronoTank: ['chronotank'],
-    OffChrono: ['zerker chrono'],
-    OilKiter: ['magi druid'],
-    Healer: ['magi druid'],
-    HandKiter: ['hand kite rev'],
-    StrengthPS: ['condi PS'],
-    DisciplinePS: ['condi PS'],
-    DPSOne: ['condi ranger'],
-    DPSTwo: ['condi ranger'],
-    DPSThree: ['condi ranger'],
-    compOrder: ['ChronoTank', 'OffChrono', 'OilKiter', 'Healer', 'HandKiter', 'StrengthPS', 'DisciplinePS', 'DPSOne', 'DPSTwo', 'DPSThree']
-};
-
-var w1Comp = {
-    ChronoTank: ['chronotank'],
-    OffChrono: ['zerker chrono'],
-    GroupHealer: ['magi druid'],
-    ObjectiveHealer: ['magi druid'],
-    StrengthPS: ['condi PS'],
-    DisciplinePS: ['condi PS'],
-    CondiDPSOne: ['condi ranger'],
-    CondiDPSTwo: ['condi ranger'],
-    EleOne: ['staff tempest', 'x/wh tempest'],
-    EleTwo: ['staff tempest', 'x/wh tempest'],
-    compOrder: ['ChronoTank', 'OffChrono', 'GroupHealer', 'ObjectiveHealer', 'StrengthPS', 'DisciplinePS', 'CondiDPSOne', 'CondiDPSTwo', 'EleOne', 'EleTwo']
-};
