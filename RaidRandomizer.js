@@ -2,6 +2,7 @@
     $('#compSelect').on("change", function () {
         fetchCompFromSpreadsheet($('#compSelect').val());
     });
+
 });
 
 function randomizeArray(array) {
@@ -36,18 +37,29 @@ function fetchRandomReasonablePersonRole(object, roles) {
     return randomizeArray(possiblePersonRoles)[0];
 }
 
-var jsonObject;
 var maxBuildTries = 100;
 var buildingTries = 0;
 var compToUse;
+var hasDoneInitialValidation = false;
+var minimumConfidence
+var maximumConfidence
 function run() {
-    if (!jsonObject) {
-        alert('failed to load people');
-        return;
-    }
 
     var raidComp = {};
     var comp = compToUse;
+
+    buildingTries++;
+
+    if (hasDoneInitialValidation == false) {
+        minimumConfidence = $('#minConfidence').val();
+        maximumConfidence = $('#maxConfidence').val();
+        if (isValidConfidence(parseInt(minimumConfidence, 10), parseInt(maximumConfidence, 10)) == false) {
+            alert('invalid min/max confidence settings... must be a percentage number between 1 and 100 with maximum greater than minimum')
+            return;
+        } else {
+            hasDoneInitialValidation = true;
+        }
+    }
 
     //randomize roles & people
     var randomRoles = randomizeArray(comp.compOrder);
@@ -107,16 +119,21 @@ function run() {
     if (buildingTries >= maxBuildTries){
         alert("could not build a comp above the ability threshold after " + buildingTries + " tries");
         buildingTries = 0;
+        hasDoneInitialValidation = false;
         return;
     }
 
-    //check comp's ability (25+)
-    if(compAbilityTotal(raidComp) < 25 || compIsFull(raidComp, randomRoles.length) == false) {
-        buildingTries++;
+    var compAbility = compAbilityTotal(raidComp);
+    var totalPossibleAbility = randomRoles.length * 3;
+    var compConfidence = Math.floor((compAbility / totalPossibleAbility) * 100);
+
+    if(compConfidence > maximumConfidence || compConfidence < minimumConfidence || compIsFull(raidComp, randomRoles.length) == false) {
         run();
         return;
     } else {
+        console.log("found comp after " + buildingTries + " tries");
         buildingTries = 0;
+        hasDoneInitialValidation = false;
 
         //build copy/paste-able text for assigning roles
         var discordText = buildRaidCompTextDiscord(raidComp, randomRoles.sort());
@@ -127,20 +144,20 @@ function run() {
             '<div style="font-size:20px;font-weight:bold;">GW2:</div>' +
             gw2Text;
 
-        var ability = compAbilityTotal(raidComp);
-        var totalPossibleAbility = randomRoles.length;
-
         displayText +=
             '<div>' +
-            'Confidence: ' + Math.floor((ability / (totalPossibleAbility * 3)) * 100) + '% (' + ability + '/' + (totalPossibleAbility * 3) + ')' +
+            'Confidence: ' + compConfidence + '% (' + compAbility + '/' + totalPossibleAbility + ')' +
             '</div>';
 
         $('.mainContent').html(displayText);
     }
 };
 
-function getCompFromName(compName) {
-    return window[compName];
+function isValidConfidence(min, max) {
+    var isMinValid = min < 100 && min >= 0;
+    var isMaxValid = max <= 100 && max > 0;
+    var isMaxGreater = min < max;
+    return isMinValid && isMaxValid && isMaxGreater;
 }
 
 function compAbilityTotal(comp) {

@@ -8,6 +8,15 @@
     <script src="RaidRandomizer.js"></script>
     <button id="authorize-button" style="display: none;">Use Google Sheet</button>
     <button id="signout-button" style="display: none;">Sign Out</button>
+    <div>
+        <div>Confidence Thresholds (%)</div>
+        <span>
+            Max:<input type="number" id="maxConfidence" value="100" max="100" min="2" />
+        </span>
+        <span>
+            Min:<input type="number" id="minConfidence" value="83" max="99" min="1" />
+        </span>
+    </div>
     <select id="compSelect">
         <optgroup label="Wing 1">
             <option value="VG">Vale Guardian</option>
@@ -31,10 +40,10 @@
             <option value="Deimos">Deimos</option>
         </optgroup>
         <optgroup label="Full Wings">
-            <option value="W1">Wing 1</option>
-            <option value="W2">Wing 2</option>
-            <option value="W3">Wing 3</option>
-            <option value="W4">Wing 4</option>
+            <option class="fullWing" value="W1">Wing 1</option>
+            <option class="fullWing" value="W2">Wing 2</option>
+            <option class="fullWing" value="W3">Wing 3</option>
+            <option class="fullWing" value="W4">Wing 4</option>
         </optgroup>
     </select>
     <input type="button" onclick="run()" value="Randomize!" />
