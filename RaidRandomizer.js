@@ -134,20 +134,21 @@ function run() {
         console.log("found comp after " + buildingTries + " tries");
         buildingTries = 0;
         hasDoneInitialValidation = false;
-
-        //build copy/paste-able text for assigning roles
-        var discordText = buildRaidCompTextDiscord(raidComp, randomRoles.sort());
-        var gw2Text = buildRaidCompTextGW2(raidComp, randomRoles.sort());
-        var displayText =
-            '<div style="font-size:20px;font-weight:bold;">Discord:</div>' +
-            discordText +
-            '<div style="font-size:20px;font-weight:bold;">GW2:</div>' +
-            gw2Text;
+        var displayText = '';
 
         displayText +=
             '<div>' +
             'Confidence: ' + compConfidence + '% (' + compAbility + '/' + totalPossibleAbility + ')' +
             '</div>';
+
+        //build copy/paste-able text for assigning roles
+        var discordText = buildRaidCompTextDiscord(raidComp, randomRoles.sort());
+        var gw2Text = buildRaidCompTextGW2(raidComp, randomRoles.sort());
+        displayText +=
+            '<div style="font-size:20px;font-weight:bold;">Discord:</div>' +
+            discordText +
+            '<div style="font-size:20px;font-weight:bold;">GW2:</div>' +
+            gw2Text;
 
         $('.mainContent').html(displayText);
     }
@@ -191,13 +192,18 @@ function buildRaidCompTextGW2(comp, compArray) {
     var displayText = '';
     var characterCount = 0;
     var pageCount = 1;
+    displayText +=
+                '<div>---------page ' +
+                pageCount++ +
+                '-----------</div>';
 
     for (var i = 0; i < compArray.length; i++) {
         var compElement = compArray[i];
         var personName = comp[compElement].name;
+        var role = ' (' + comp[compElement].profession + ')';
         var separator = ': ';
         var spacer = ' | ';
-        characterCount += compElement.length + personName.length + separator.length + spacer.length;
+        characterCount += compElement.length + personName.length + role.length + separator.length + spacer.length;
         if (characterCount > 199) {
             displayText +=
                 '<div>---------page ' +
@@ -207,7 +213,7 @@ function buildRaidCompTextGW2(comp, compArray) {
         }
         displayText +=
             '<div>' +
-            compElement + separator + personName + spacer +
+            compElement + separator + personName + role + spacer +
             '</div>';
     }
 
