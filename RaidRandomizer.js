@@ -41,9 +41,13 @@ var maxBuildTries = 100;
 var buildingTries = 0;
 var compToUse;
 var hasDoneInitialValidation = false;
-var minimumConfidence
-var maximumConfidence
+var minimumConfidence;
+var maximumConfidence;
 function run() {
+    if ($('#compSelect')[0].selectedOptions[0].className == 'fullWing') {
+        runFullWing();
+        return;
+    }
 
     var raidComp = {};
     var comp = compToUse;
@@ -154,6 +158,97 @@ function run() {
     }
 };
 
+function runFullWing() {
+    var raidComp = {};
+    var comp = compToUse;
+
+    buildingTries++;
+
+    if (hasDoneInitialValidation == false) {
+        minimumConfidence = $('#minConfidence').val();
+        maximumConfidence = $('#maxConfidence').val();
+        if (isValidConfidence(parseInt(minimumConfidence, 10), parseInt(maximumConfidence, 10)) == false) {
+            alert('invalid min/max confidence settings... must be a percentage number between 1 and 100 with maximum greater than minimum')
+            return;
+        } else {
+            hasDoneInitialValidation = true;
+        }
+    }
+
+    //randomize roles & people
+    var randomRoles = randomizeArray(comp.compOrder);
+    var randomPeople = randomizeArray(jsonObject);
+
+    //for each role go through each person
+    for (var roleNum = 0; roleNum < randomRoles.length; roleNum++) {
+        for (var personNum = 0; personNum < randomPeople.length; personNum++) {
+            //find suitable person for role (matches all classes)
+            var role = randomRoles[roleNum];
+            var person = randomPeople[personNum];
+            var continueOut = false;
+
+            for (var assignedRolesNum = 0; assignedRolesNum < Object.keys(raidComp).length; assignedRolesNum++) {
+                if (raidComp[Object.keys(raidComp)[assignedRolesNum]].name == person.name) {
+                    //person already added;
+                    continueOut = true;
+                    break;
+                }
+            }
+            if (continueOut) {
+                continue;
+            }
+
+            if (canPersonFillRole(person, comp[role])) {
+                var skillTotal = 0;
+                for (var i = 0; i < comp[role].length; i++) {
+                    skillTotal += Number(person[comp[role][i]]);
+                }
+                var skill = skillTotal/comp[role].length;
+                raidComp[role] = { name: person.name, skill: skill, professions: comp[role] };
+                continue;
+            }
+        }
+    }
+
+    //don't blow up your computer
+    if (buildingTries >= maxBuildTries) {
+        alert("could not build a comp above the ability threshold after " + buildingTries + " tries");
+        buildingTries = 0;
+        hasDoneInitialValidation = false;
+        return;
+    }
+
+    var compAbility = compAbilityTotal(raidComp);
+    var totalPossibleAbility = randomRoles.length * 3;
+    var compConfidence = Math.floor((compAbility / totalPossibleAbility) * 100);
+
+    if (compConfidence > maximumConfidence || compConfidence < minimumConfidence || compIsFull(raidComp, randomRoles.length) == false) {
+        runFullWing();
+        return;
+    } else {
+        console.log("found comp after " + buildingTries + " tries");
+        buildingTries = 0;
+        hasDoneInitialValidation = false;
+        var displayText = '';
+
+        displayText +=
+            '<div>' +
+            'Confidence: ' + compConfidence + '% (' + compAbility + '/' + totalPossibleAbility + ')' +
+            '</div>';
+
+        //build copy/paste-able text for assigning roles
+        var discordText = buildRaidCompTextDiscord(raidComp, randomRoles.sort(), true);
+        var gw2Text = buildRaidCompTextGW2(raidComp, randomRoles.sort(), true);
+        displayText +=
+            '<div style="font-size:20px;font-weight:bold;">Discord:</div>' +
+            discordText +
+            '<div style="font-size:20px;font-weight:bold;">GW2:</div>' +
+            gw2Text;
+
+        $('.mainContent').html(displayText);
+    }
+};
+
 function isValidConfidence(min, max) {
     var isMinValid = min < 100 && min >= 0;
     var isMaxValid = max <= 100 && max > 0;
@@ -173,22 +268,42 @@ function compIsFull(comp, desiredLength) {
     return Object.keys(comp).length == desiredLength;
 }
 
-function buildRaidCompTextDiscord(comp, compArray) {
+function buildRaidCompTextDiscord(comp, compArray, fullWing) {
     var displayText = '';
     
-    for (var i = 0; i < compArray.length; i++) {
-        var compElement = compArray[i];
+    if (fullWing) {
+        for (var i = 0; i < compArray.length; i++) {
+            var compElement = compArray[i];
+            displayText +=
+               '<div>' +
+               compElement + ': ' +
+               comp[compElement].name + ' ('
 
-        displayText +=
-            '<div>' +
-            compElement + ': ' + comp[compElement].name + ' (' + comp[compElement].profession + ')' +
-            '</div>';
+            for (var j = 0; j < comp[compElement].professions.length; j++) {
+                displayText += comp[compElement].professions[j];
+                if (j < comp[compElement].professions.length-1) {
+                    displayText += ', ';
+                }
+            }
+
+           
+            displayText += ')</div>';
+        }
+    } else {
+        for (var i = 0; i < compArray.length; i++) {
+            var compElement = compArray[i];
+
+            displayText +=
+                '<div>' +
+                compElement + ': ' + comp[compElement].name + ' (' + comp[compElement].profession + ')' +
+                '</div>';
+        }
     }
 
     return displayText;
 }
 
-function buildRaidCompTextGW2(comp, compArray) {
+function buildRaidCompTextGW2(comp, compArray, fullWing) {
     var displayText = '';
     var characterCount = 0;
     var pageCount = 1;
@@ -197,25 +312,63 @@ function buildRaidCompTextGW2(comp, compArray) {
                 pageCount++ +
                 '-----------</div>';
 
-    for (var i = 0; i < compArray.length; i++) {
-        var compElement = compArray[i];
-        var personName = comp[compElement].name;
-        var role = ' (' + comp[compElement].profession + ')';
-        var separator = ': ';
-        var spacer = ' | ';
-        characterCount += compElement.length + personName.length + role.length + separator.length + spacer.length;
-        if (characterCount > 199) {
+    if (fullWing) {
+        for (var i = 0; i < compArray.length; i++) {
+            var compElement = compArray[i];
+            var personName = comp[compElement].name;
+            var professions = '';
+            for (var j = 0; j < comp[compElement].professions.length; j++) {
+                professions += comp[compElement].professions[j];
+                if (j < comp[compElement].professions.length - 1) {
+                    professions += ', ';
+                }
+            }
+            var role = ' (' + professions + ')';
+            var separator = ': ';
+            var spacer = ' | ';
+            characterCount += compElement.length + personName.length + role.length + separator.length + spacer.length;
+            if (characterCount > 199) {
+                displayText +=
+                    '<div>---------page ' +
+                    pageCount++ +
+                    '-----------</div>';
+                characterCount = compElement.length + personName.length + role.length + separator.length + spacer.length;
+            }
             displayText +=
-                '<div>---------page ' +
-                pageCount++ +
-                '-----------</div>';
-            characterCount = 0;
+                '<div>' +
+                compElement + separator + personName + role + spacer +
+                '</div>';
         }
-        displayText +=
-            '<div>' +
-            compElement + separator + personName + role + spacer +
-            '</div>';
+    } else {
+        for (var i = 0; i < compArray.length; i++) {
+            var compElement = compArray[i];
+            var personName = comp[compElement].name;
+            var role = ' (' + comp[compElement].profession + ')';
+            var separator = ': ';
+            var spacer = ' | ';
+            characterCount += compElement.length + personName.length + role.length + separator.length + spacer.length;
+            if (characterCount > 199) {
+                displayText +=
+                    '<div>---------page ' +
+                    pageCount++ +
+                    '-----------</div>';
+                characterCount = compElement.length + personName.length + role.length + separator.length + spacer.length;
+            }
+            displayText +=
+                '<div>' +
+                compElement + separator + personName + role + spacer +
+                '</div>';
+        }
     }
 
     return displayText;
+}
+
+function canPersonFillRole(person, roles) {
+    for (var i = 0; i < roles.length; i++) {
+        if (person[roles[0]] <= 0) {
+            return false;
+        }
+    }
+    return true;
 }
