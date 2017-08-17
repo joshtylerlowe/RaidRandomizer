@@ -40,6 +40,7 @@ function fetchRandomReasonablePersonRole(object, roles) {
 var maxBuildTries = 100;
 var buildingTries = 0;
 var compToUse;
+var setRoles = [];
 var hasDoneInitialValidation = false;
 var minimumConfidence;
 var maximumConfidence;
@@ -270,7 +271,7 @@ function compIsFull(comp, desiredLength) {
 
 function buildRaidCompTextDiscord(comp, compArray, fullWing) {
     var displayText = '';
-    
+
     if (fullWing) {
         for (var i = 0; i < compArray.length; i++) {
             var compElement = compArray[i];
@@ -286,7 +287,7 @@ function buildRaidCompTextDiscord(comp, compArray, fullWing) {
                 }
             }
 
-           
+
             displayText += ')</div>';
         }
     } else {

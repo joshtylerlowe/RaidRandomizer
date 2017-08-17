@@ -78,8 +78,13 @@ function makePerson(labels, row) {
 
 function makeRole(row) {
     var roles = [];
-    for (var i = 2; i < row.length; i++) {
-        roles.push(row[i]);
+    if (row[11] && row[11].length > 0) {
+        setRoles.push({role:row[1],name:row[11]});
+    }
+    for (var i = 2; i < 10; i++) {
+        if (row[i] && row[i].length > 0) {
+            roles.push(row[i]);
+        }
     }
     return roles;
 }
@@ -106,6 +111,7 @@ function fetchPeopleFromSpreadsheet() {
 }
 
 function fetchCompFromSpreadsheet(sheetName) {
+    setRoles = [];
     var rows = [];
     gapi.client.sheets.spreadsheets.values.get({
         spreadsheetId: '13AqbYSAQae9WSInM7dK5heqHahk4yT2zg21iHXroHRE',
