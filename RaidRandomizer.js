@@ -24,12 +24,13 @@ function randomizeArray(array) {
     return array;
 }
 
-function fetchRandomReasonablePersonRole(object, roles) {
+function fetchRandomReasonablePersonRole(personObject, roles) {
     var possiblePersonRoles = [];
+    var foundRole = null;
 
-    for (var i = 0; i < Object.keys(object).length; i++) {
-        var key = Object.keys(object)[i];
-        if (object[key] > 0 && $.inArray(key, roles) !== -1) {
+    for (var i = 0; i < Object.keys(personObject).length; i++) {
+        var key = Object.keys(personObject)[i];
+        if (personObject[key] > 0 && $.inArray(key, roles) !== -1) {
             possiblePersonRoles.push(key);
         }
     }
@@ -70,17 +71,36 @@ function run() {
     var randomRoles = randomizeArray(comp.compOrder);
     var randomPeople = randomizeArray(jsonObject);
 
+    //remove people that are also in the setRoles list
+    randomPeople = randomPeople.filter(function (person) {
+        for (var i = 0; i < setRoles.length; i++) {
+            if (setRoles[i].name == person.name) {
+                return false;
+            }
+        }
+        return true;
+    });
+
     //for each role go through each person
     for (var roleNum = 0; roleNum < randomRoles.length; roleNum++) {
+        var role = randomRoles[roleNum];
+
+        var setRole = setRoles.find(function (e) { return e.role == role; });
+        if (setRole) {
+            var setPerson = randomPeople.find(function (p) { return p.name == setRole.name })
+            raidComp[role] = { name: setRole.name, skill: "2", profession: setRole.role };
+            continue;
+        }
+
         for (var personNum = 0; personNum < randomPeople.length; personNum++) {
             //find suitable role
-            var role = randomRoles[roleNum];
+            
             var person = randomPeople[personNum];
 
             var continueOut = false;
             for (var assignedRolesNum = 0; assignedRolesNum < Object.keys(raidComp).length; assignedRolesNum++) {
                 if (raidComp[Object.keys(raidComp)[assignedRolesNum]].name == person.name) {
-                    //person already added;
+                    //person already added
                     continueOut = true;
                     break;
                 }
@@ -90,7 +110,7 @@ function run() {
             }
 
             var randomPersonRole = fetchRandomReasonablePersonRole(person, comp[role]);
-
+            
             //set person to role
             if (randomPersonRole && randomPersonRole.length > 0) {
                 raidComp[role] = { name: person.name, skill: person[randomPersonRole], profession: randomPersonRole };
