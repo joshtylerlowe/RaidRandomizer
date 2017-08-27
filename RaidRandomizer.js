@@ -136,26 +136,7 @@ function run() {
         run();
         return;
     } else {
-        console.log("found comp after " + buildingTries + " tries");
-        buildingTries = 0;
-        hasDoneInitialValidation = false;
-        var displayText = '';
-
-        displayText +=
-            '<div>' +
-            'Confidence: ' + compConfidence + '% (' + compAbility + '/' + totalPossibleAbility + ')' +
-            '</div>';
-
-        //build copy/paste-able text for assigning roles
-        var discordText = buildRaidCompTextDiscord(raidComp, randomRoles.sort());
-        var gw2Text = buildRaidCompTextGW2(raidComp, randomRoles.sort());
-        displayText +=
-            '<div style="font-size:20px;font-weight:bold;">Discord:</div>' +
-            discordText +
-            '<div style="font-size:20px;font-weight:bold;">GW2:</div>' +
-            gw2Text;
-
-        $('.mainContent').html(displayText);
+        buildRaidCompText(compConfidence, compAbility, totalPossibleAbility, raidComp, randomRoles);
     }
 };
 
@@ -227,26 +208,7 @@ function runFullWing() {
         runFullWing();
         return;
     } else {
-        console.log("found comp after " + buildingTries + " tries");
-        buildingTries = 0;
-        hasDoneInitialValidation = false;
-        var displayText = '';
-
-        displayText +=
-            '<div>' +
-            'Confidence: ' + compConfidence + '% (' + compAbility + '/' + totalPossibleAbility + ')' +
-            '</div>';
-
-        //build copy/paste-able text for assigning roles
-        var discordText = buildRaidCompTextDiscord(raidComp, randomRoles.sort(), true);
-        var gw2Text = buildRaidCompTextGW2(raidComp, randomRoles.sort(), true);
-        displayText +=
-            '<div style="font-size:20px;font-weight:bold;">Discord:</div>' +
-            discordText +
-            '<div style="font-size:20px;font-weight:bold;">GW2:</div>' +
-            gw2Text;
-
-        $('.mainContent').html(displayText);
+        buildRaidCompText(compConfidence, compAbility, totalPossibleAbility, raidComp, randomRoles, true);
     }
 };
 
@@ -372,4 +334,27 @@ function canPersonFillRole(person, roles) {
         }
     }
     return true;
+}
+
+function buildRaidCompText(compConfidence, compAbility, totalPossibleAbility, raidComp, randomRoles, isFullWing) {
+    console.log("found comp after " + buildingTries + " tries");
+    buildingTries = 0;
+    hasDoneInitialValidation = false;
+    var displayText = '';
+
+    displayText +=
+        '<div>' +
+        'Confidence: ' + compConfidence + '% (' + compAbility + '/' + totalPossibleAbility + ')' +
+        '</div>';
+
+    //build copy/paste-able text for assigning roles
+    var discordText = buildRaidCompTextDiscord(raidComp, randomRoles.sort(), isFullWing);
+    var gw2Text = buildRaidCompTextGW2(raidComp, randomRoles.sort(), isFullWing);
+    displayText +=
+        '<div style="font-size:20px;font-weight:bold;">Discord:</div>' +
+        discordText +
+        '<div style="font-size:20px;font-weight:bold;">GW2:</div>' +
+        gw2Text;
+
+    $('.mainContent').html(displayText);
 }
